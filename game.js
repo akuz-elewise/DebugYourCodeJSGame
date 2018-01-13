@@ -62,6 +62,8 @@ window.onload = function() {
 
     var lives;
     var livesCounter;
+    var face='right';
+	   var state='ggRun';
     var playState = {
         preload: function() {
             game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
@@ -69,6 +71,30 @@ window.onload = function() {
             game.load.image('player', 'assets/phaser-dude.png');
             game.load.image('bullet', 'assets/bullet.png');
             game.load.image('heart', 'assets/player.png');
+            game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
+            game.load.image('tiles', 'assets/tiles/super_mario_tiles.png');
+            game.load.image('player', 'assets/phaser-dude.png');
+            game.load.image('bullet', 'assets/bullet.png');
+            game.load.image('heart', 'assets/player.png');
+			game.load.spritesheet('ggAtack','assets/sprites/gg_atack_74x81_right.png',74,81,5);
+			game.load.spritesheet('ggDie','assets/sprites/gg_die_86x83_right.png',86,83,6);
+			game.load.spritesheet('ggDizzy','assets/sprites/gg_dizzy_75x71_right.png',75,71,3);
+			game.load.spritesheet('ggDmg','assets/sprites/gg_dmg_57x79_right.png',57,79,1);
+			game.load.spritesheet('ggIdle','assets/sprites/gg_idle_57x79_right.png',57,79,1);
+			game.load.spritesheet('ggJump', 'assets/sprites/gg_jump_62x76_right.png', 62, 76, 5);
+			game.load.spritesheet('ggRun', 'assets/sprites/gg_run_58x70_right.png', 58, 70, 7);
+			game.load.spritesheet('boss1Stay','assets/sprites/boss_1_stay_left_40_184.png',40,184,1);
+			game.load.spritesheet('boss1Atack','assets/sprites/boss1_attack_left_82_183.png',82,183,3);
+			game.load.spritesheet('boss1Dmg','assets/sprites/boss1_dmg_left_55_158.png',55,158,4);
+			game.load.spritesheet('boss1Lose','assets/sprites/boss1_lose_left_46_161.png',46,161,3);
+			game.load.spritesheet('boss1Walk','assets/sprites/boss1_walk_left_78_191.png',78,191,2);
+		      game.load.spritesheet('boss1Win','assets/sprites/boss1_win_left_90_182.png',90,182,5);
+			game.load.spritesheet('bugDmg','assets/sprites/bug_dmg_46x30_right.png',46,30,4);
+			game.load.spritesheet('bugLose','assets/sprites/bug_lose_49x31_right.png',49,31,4);
+			game.load.spritesheet('bugRun','assets/sprites/bug_run_48x33_right.png',48,33,5);
+			game.load.spritesheet('bugWin','assets/sprites/bug_win_48x37_right.png',48,37,3);
+			game.load.spritesheet('bike','assets/sprites/hindu_34x46_right.png',34,46,3);
+			game.load.spritesheet('mumy','assets/sprites/metalslug_mummy37x45.png',37,45,18);
             this.lives = null;
             this.livesCounter = 3;
         },
@@ -126,7 +152,10 @@ window.onload = function() {
 
             layer.resizeWorld();
 
-            p = game.add.sprite(32, 32, 'player');
+            //p = game.add.sprite(32, 32, 'player');
+            p = game.add.sprite(32, 32, state);
+			         p.animations.add('run', [0,1,2,3,4,5]);
+			            p.animations.play('run', 10, true);
             p.health = 100;
             game.physics.enable(p);
 
@@ -176,21 +205,31 @@ window.onload = function() {
             //  Check collisions
             game.physics.arcade.overlap(p, enemies, shipCollide, null, this);
             game.physics.arcade.overlap(enemies, weapon.bullets, hitEnemy, null, this);
-            if (p.body.y > 200) {
-                game.state.start('gameover');
-            }
             if (cursors.up.isDown) {
+				if(state != 'ggJump'){
+					     p.loadTexture('ggJump',0,false);
+					          state='ggJump';
+					}
                 if (p.body.onFloor()) {
                     p.body.velocity.y = -200;
                 }
             }
             if (cursors.left.isDown) {
+				          if(state != 'ggRun'){
+					               p.loadTexture('ggRun',0,false);
+					                    state='ggRun';
+				          }
                 p.body.velocity.x = -150;
                 if (fireButton.isDown) {
                     weapon.fireAngle = -175;
                     weapon.fire();
                 }
-            } else if (cursors.right.isDown) {
+            }
+            else if (cursors.right.isDown) {
+				          if(state != 'ggRun'){
+					               p.loadTexture('ggRun',0,false);
+					                    state='ggRun';
+					        }
                 p.body.velocity.x = 150;
                 if (fireButton.isDown) {
                     weapon.fireAngle = 355;
