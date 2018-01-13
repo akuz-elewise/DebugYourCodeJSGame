@@ -1,116 +1,114 @@
 window.onload = function() {
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'GameWindow', { preload: preload, create: create, update: update, render: render });
+    var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'GameWindow');
 
-function preload() {
+    var playState = {
+        preload: function() {
 
-    game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', 'assets/tiles/super_mario_tiles.png');
-    game.load.image('player', 'assets/phaser-dude.png');
-    game.load.image('bullet', 'assets/bullet.png');
-}
+            game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
+            game.load.image('tiles', 'assets/tiles/super_mario_tiles.png');
+            game.load.image('player', 'assets/phaser-dude.png');
+            game.load.image('bullet', 'assets/bullet.png');
+        },
 
-var map;
-var tileset;
-var layer;
-var p;
-var cursors;
+        // var map;
+        // var tileset;
+        // var layer;
+        // var p;
+        // var cursors;
 
-var sprite;
-var weapon;
-var fireButton;
+        // var sprite;
+        // var weapon;
+        // var fireButton;
 
-function create() {
+        create: function() {
 
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+            game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    game.stage.backgroundColor = '#787878';
+            game.stage.backgroundColor = '#787878';
 
-    map = game.add.tilemap('mario');
+            map = game.add.tilemap('mario');
 
-    map.addTilesetImage('test_tiles', 'tiles');
+            map.addTilesetImage('test_tiles', 'tiles');
 
-    map.setCollisionBetween(15, 16);
-    map.setCollisionBetween(20, 25);
-    map.setCollisionBetween(27, 29);
-    map.setCollision(40);
+            map.setCollisionBetween(15, 16);
+            map.setCollisionBetween(20, 25);
+            map.setCollisionBetween(27, 29);
+            map.setCollision(40);
 
-    layer = map.createLayer('World1');
+            layer = map.createLayer('World1');
 
-    layer.resizeWorld();
+            layer.resizeWorld();
 
-    p = game.add.sprite(32, 32, 'player');
+            p = game.add.sprite(32, 32, 'player');
 
-    game.physics.enable(p);
+            game.physics.enable(p);
 
-    game.physics.arcade.gravity.y = 600;
+            game.physics.arcade.gravity.y = 600;
 
-    p.body.bounce.y = 0.2;
-    p.body.linearDamping = 1;
-    p.body.collideWorldBounds = true;
+            p.body.bounce.y = 0.2;
+            p.body.linearDamping = 1;
+            p.body.collideWorldBounds = true;
 
-    game.camera.follow(p);
+            game.camera.follow(p);
 
 
-    //Оружие
-    weapon = game.add.weapon(1, 'bullet');
+            //������
+            weapon = game.add.weapon(1, 'bullet');
 
-    weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
 
-    //weapon.bulletAngleVariance = 3;
-    weapon.bulletLifespan = 500;
-    weapon.bulletSpeed = 700;
-    weapon.fireRate = 50;
-    weapon.multiFire = true;
-    weapon.fireAngle = 355;
-    weapon.bulletGravity.y = -500;
-    weapon.trackSprite(p, 16, 20);
-
-    cursors = game.input.keyboard.createCursorKeys();
-    fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
-}
-
-function update() {
-
-    game.physics.arcade.collide(p, layer);
-
-    p.body.velocity.x = 0;
-    weapon.fireAngle = 355;
-    if (cursors.up.isDown)
-    {
-        if (p.body.onFloor())
-        {
-            p.body.velocity.y = -200;
-        }
-    }
-    else if (cursors.left.isDown)
-    {
-        p.body.velocity.x = -150;
-        if (fireButton.isDown)
-        {
-            weapon.fireAngle = -175;
-            weapon.fire();
-        }
-    }
-    else if (cursors.right.isDown)
-    {
-        p.body.velocity.x = 150;
-        if (fireButton.isDown)
-        {
+            //weapon.bulletAngleVariance = 3;
+            weapon.bulletLifespan = 500;
+            weapon.bulletSpeed = 700;
+            weapon.fireRate = 50;
+            weapon.multiFire = true;
             weapon.fireAngle = 355;
-            weapon.fire();
+            weapon.bulletGravity.y = -500;
+            weapon.trackSprite(p, 16, 20);
+
+            cursors = game.input.keyboard.createCursorKeys();
+            fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+        },
+
+        update: function() {
+
+            game.physics.arcade.collide(p, layer);
+
+            p.body.velocity.x = 0;
+            weapon.fireAngle = 355;
+            if (cursors.up.isDown) {
+                if (p.body.onFloor()) {
+                    p.body.velocity.y = -200;
+                }
+            } else if (cursors.left.isDown) {
+                p.body.velocity.x = -150;
+                if (fireButton.isDown) {
+                    weapon.fireAngle = -175;
+                    weapon.fire();
+                }
+            } else if (cursors.right.isDown) {
+                p.body.velocity.x = 150;
+                if (fireButton.isDown) {
+                    weapon.fireAngle = 355;
+                    weapon.fire();
+                }
+            }
+
+            if (fireButton.isDown) {
+                weapon.fire();
+            }
+        },
+
+        render: function() {
+
+            // game.debug.body(p);
+            game.debug.bodyInfo(p, 32, 320);
+
         }
     }
 
-    if (fireButton.isDown)
-    {
-        weapon.fire();
-    }
-}
+    game.state.add('play', playState);
 
-function render() {
+    game.state.start('play');
 
-    // game.debug.body(p);
-    game.debug.bodyInfo(p, 32, 320);
-
-}
 }
