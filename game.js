@@ -70,6 +70,7 @@ window.onload = function() {
             game.load.image('bullet', 'assets/bullet.png');
             game.load.image('heart', 'assets/player.png');
             game.load.image('bug1', 'assets/bug_1.png');
+            game.load.audio('music', 'assets/Battle_Loop.mp3');
             this.lives = null;
             this.livesCounter = 3;
         },
@@ -93,6 +94,8 @@ window.onload = function() {
         },
         create: function() {
 
+            music = game.add.audio('music');
+            music.play();
             game.physics.startSystem(Phaser.Physics.ARCADE);
 
             //  Lives
