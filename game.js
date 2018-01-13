@@ -6,6 +6,7 @@ function preload() {
     game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', 'assets/tiles/super_mario_tiles.png');
     game.load.image('player', 'assets/phaser-dude.png');
+    game.load.image('bullet', 'assets/bullet.png');
 }
 
 var map;
@@ -13,6 +14,10 @@ var tileset;
 var layer;
 var p;
 var cursors;
+
+var sprite;
+var weapon;
+var fireButton;
 
 function create() {
 
@@ -45,8 +50,23 @@ function create() {
 
     game.camera.follow(p);
 
-    cursors = game.input.keyboard.createCursorKeys();
 
+    //Оружие
+    weapon = game.add.weapon(1, 'bullet');
+
+    weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+
+    //weapon.bulletAngleVariance = 3;
+    weapon.bulletLifespan = 500;
+    weapon.bulletSpeed = 700;
+    weapon.fireRate = 50;
+    weapon.multiFire = true;
+    weapon.fireAngle = 355;
+    weapon.bulletGravity.y = -500;
+    weapon.trackSprite(p, 16, 20);
+
+    cursors = game.input.keyboard.createCursorKeys();
+    fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
 }
 
 function update() {
@@ -54,7 +74,7 @@ function update() {
     game.physics.arcade.collide(p, layer);
 
     p.body.velocity.x = 0;
-
+    weapon.fireAngle = 355;
     if (cursors.up.isDown)
     {
         if (p.body.onFloor())
@@ -62,16 +82,29 @@ function update() {
             p.body.velocity.y = -200;
         }
     }
-
-    if (cursors.left.isDown)
+    else if (cursors.left.isDown)
     {
         p.body.velocity.x = -150;
+        if (fireButton.isDown)
+        {
+            weapon.fireAngle = -175;
+            weapon.fire();
+        }
     }
     else if (cursors.right.isDown)
     {
         p.body.velocity.x = 150;
+        if (fireButton.isDown)
+        {
+            weapon.fireAngle = 355;
+            weapon.fire();
+        }
     }
 
+    if (fireButton.isDown)
+    {
+        weapon.fire();
+    }
 }
 
 function render() {
