@@ -1,67 +1,83 @@
 window.onload = function() {
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'GameWindow', { preload: preload, create: create, update: update, render: render });
 
-    var game = new Phaser.Game(800, 600, Phaser.AUTO, 'GameWindow', {
-        preload: preload,
-        create: create,
-        update: update
-    });
+function preload() {
 
-    function preload() {
-        game.load.image('player', 'assets/player.png');
-        game.load.image('wall', 'assets/wall.png');
-    }
+    game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
+    game.load.image('tiles', 'assets/tiles/super_mario_tiles.png');
+    game.load.image('player', 'assets/phaser-dude.png');
+}
 
-    function create() {
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        game.time.desiredFps = 30;
-        game.physics.arcade.gravity.y = 250;
+var map;
+var tileset;
+var layer;
+var p;
+var cursors;
 
-        this.player = game.add.sprite(70, 100, 'player');
-        game.physics.enable(this.player, Phaser.Physics.ARCADE);
-        this.player.body.bounce.y = 0.2;
-        this.player.body.collideWorldBounds = true;
-        this.player.body.setSize(20, 20);
+function create() {
 
-        this.cursor = game.input.keyboard.createCursorKeys();
-        this.jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.UP);
-        this.jumpTimer = 0;
+    game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        createLevel();
-    }
+    game.stage.backgroundColor = '#787878';
 
-    function createLevel() {
-        var level = level00; //TODO: Переход между уровнями
+    map = game.add.tilemap('mario');
 
-        this.walls = game.add.group();
+    map.addTilesetImage('test_tiles', 'tiles');
 
-        for (var i = 0; i < level.length; i++) {
-            for (var j = 0; j < level[i].length; j++) {
-                if (level[i][j] == 'x') {
-                    var wall = game.add.sprite(30 + 20 * j, 30 + 20 * i, 'wall');
-                    game.physics.enable(wall, Phaser.Physics.ARCADE);
-                    wall.body.allowGravity = false;
-                    wall.body.setSize(20, 20);
-                    wall.body.immovable = true;
-                    this.walls.add(wall);
-                }
-            }
+    map.setCollisionBetween(15, 16);
+    map.setCollisionBetween(20, 25);
+    map.setCollisionBetween(27, 29);
+    map.setCollision(40);
+
+    layer = map.createLayer('World1');
+
+    layer.resizeWorld();
+
+    p = game.add.sprite(32, 32, 'player');
+
+    game.physics.enable(p);
+
+    game.physics.arcade.gravity.y = 600;
+
+    p.body.bounce.y = 0.2;
+    p.body.linearDamping = 1;
+    p.body.collideWorldBounds = true;
+
+    game.camera.follow(p);
+
+    cursors = game.input.keyboard.createCursorKeys();
+
+}
+
+function update() {
+
+    game.physics.arcade.collide(p, layer);
+
+    p.body.velocity.x = 0;
+
+    if (cursors.up.isDown)
+    {
+        if (p.body.onFloor())
+        {
+            p.body.velocity.y = -200;
         }
     }
 
-    function update() {
-        game.physics.arcade.collide(this.player, this.walls);
-
-        if (this.cursor.left.isDown) {
-            this.player.body.velocity.x = -200;
-        } else if (this.cursor.right.isDown) {
-            this.player.body.velocity.x = 200;
-        } else {
-            this.player.body.velocity.x = 0;
-        }
-
-        if (this.jumpButton.isDown && this.player.body.onFloor() && game.time.now > this.jumpTimer) {
-            this.player.body.velocity.y = -250;
-            this.jumpTimer = game.time.now + 750;
-        }
+    if (cursors.left.isDown)
+    {
+        p.body.velocity.x = -150;
     }
-};
+    else if (cursors.right.isDown)
+    {
+        p.body.velocity.x = 150;
+    }
+
+}
+
+function render() {
+
+    // game.debug.body(p);
+    game.debug.bodyInfo(p, 32, 320);
+
+}
+}
