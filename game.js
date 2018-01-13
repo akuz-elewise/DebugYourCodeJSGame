@@ -29,6 +29,35 @@ window.onload = function() {
         }
     };
 
+    var gameOverState = {
+
+      preload: function() {
+          game.load.image('general', 'assets/general.png');
+      },
+
+      create: function() {
+          var portrait = game.add.sprite(game.world.centerX, 50, 'general');
+          portrait.anchor.set(0.5, 0);
+          var speech = "Баги попали в релиз, боец!\nТы провалил задание!\nТы можешь попытаться ещё раз.";
+          var speechStyle = { font: "18px Arial", fill: "#ff0044", align: "center", boundsAlignH: "center", boundsAlignV: "top" };
+          var speechText = game.add.text(0, 0, speech, speechStyle);
+          speechText.setTextBounds(0, 300, 800, 200);
+
+          var msg = "Нажмите ПРОБЕЛ, чтобы попытаться заново";
+          var msgStyle = { font: "bold 14px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
+          var msgObj = game.add.text(0, 0, msg, msgStyle);
+
+          msgObj.setTextBounds(0, 500, 800, 100);
+
+          var spaceKey = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+          spaceKey.onDown.addOnce(this.start, this);
+      },
+
+      start: function() {
+          game.state.start('beginMission');
+      }
+    };
+
     var playState = {
         preload: function() {
 
@@ -94,11 +123,16 @@ window.onload = function() {
 
             p.body.velocity.x = 0;
             weapon.fireAngle = 355;
+            if(p.body.y > 200)
+            {
+                game.state.start('gameover');
+            }
             if (cursors.up.isDown) {
                 if (p.body.onFloor()) {
                     p.body.velocity.y = -200;
                 }
-            } else if (cursors.left.isDown) {
+            }
+            if (cursors.left.isDown) {
                 p.body.velocity.x = -150;
                 if (fireButton.isDown) {
                     weapon.fireAngle = -175;
@@ -127,7 +161,7 @@ window.onload = function() {
 
     game.state.add('beginMission', startMissionState);
     game.state.add('play', playState);
-
+    game.state.add('gameover', gameOverState);
     game.state.start('beginMission');
 
 }
