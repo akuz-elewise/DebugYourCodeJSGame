@@ -32,32 +32,32 @@ window.onload = function() {
 
     var gameOverState = {
 
-      preload: function() {
-          game.load.image('general', 'assets/general.png');
-      },
+        preload: function() {
+            game.load.image('general', 'assets/general.png');
+        },
 
-      create: function() {
-          var portrait = game.add.sprite(game.world.centerX, 50, 'general');
-          portrait.anchor.set(0.5, 0);
-          //game.stage.backgroundColor = '#000';
-          var speech = "Баги попали в релиз, боец!\nТы провалил задание!\nТы можешь попытаться ещё раз.";
-          var speechStyle = { font: "18px Arial", fill: "#ff0044", align: "center", boundsAlignH: "center", boundsAlignV: "top" };
-          var speechText = game.add.text(0, 0, speech, speechStyle);
-          speechText.setTextBounds(0, 300, 800, 200);
+        create: function() {
+            var portrait = game.add.sprite(game.world.centerX, 50, 'general');
+            portrait.anchor.set(0.5, 0);
+            //game.stage.backgroundColor = '#000';
+            var speech = "Баги попали в релиз, боец!\nТы провалил задание!\nТы можешь попытаться ещё раз.";
+            var speechStyle = { font: "18px Arial", fill: "#ff0044", align: "center", boundsAlignH: "center", boundsAlignV: "top" };
+            var speechText = game.add.text(0, 0, speech, speechStyle);
+            speechText.setTextBounds(0, 300, 800, 200);
 
-          var msg = "Нажмите ПРОБЕЛ, чтобы попытаться заново";
-          var msgStyle = { font: "bold 14px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
-          var msgObj = game.add.text(0, 0, msg, msgStyle);
+            var msg = "Нажмите ПРОБЕЛ, чтобы попытаться заново";
+            var msgStyle = { font: "bold 14px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
+            var msgObj = game.add.text(0, 0, msg, msgStyle);
 
-          msgObj.setTextBounds(0, 500, 800, 100);
+            msgObj.setTextBounds(0, 500, 800, 100);
 
-          var spaceKey = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
-          spaceKey.onDown.addOnce(this.start, this);
-      },
+            var spaceKey = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+            spaceKey.onDown.addOnce(this.start, this);
+        },
 
-      start: function() {
-          game.state.start('beginMission');
-      }
+        start: function() {
+            game.state.start('beginMission');
+        }
     };
 
     var lives;
@@ -74,21 +74,21 @@ window.onload = function() {
         },
 
         hurtPlayer: function(player) {
-          //enemy.play('attacking');
-          //player.play('hit');
-          var live = this.lives.getFirstAlive();
+            //enemy.play('attacking');
+            //player.play('hit');
+            var live = this.lives.getFirstAlive();
 
-          if (live) {
-            live.kill();
-          }
+            if (live) {
+                live.kill();
+            }
 
-          this.livesCounter--;
-          console.log(this.livesCounter);
-          if (this.livesCounter == 0) {
-            game.state.start('gameover');
-            player.kill();
-            //this.playerDies(); // Use your custom function when the player dies
-          }
+            this.livesCounter--;
+            console.log(this.livesCounter);
+            if (this.livesCounter == 0) {
+                player.kill();
+                game.state.start('gameover');
+                //this.playerDies(); // Use your custom function when the player dies
+            }
         },
         create: function() {
 
@@ -100,15 +100,15 @@ window.onload = function() {
             var y = 250;
 
             for (var i = 0; i < 3; i++) {
-              var yourSprite = this.lives.create(
-                x - 100 + 30 * i,
-                y,
-                'heart'
-              );
-              yourSprite.anchor.setTo(0.5, 0.5);
+                var yourSprite = this.lives.create(
+                    x - 100 + 30 * i,
+                    y,
+                    'heart'
+                );
+                yourSprite.anchor.setTo(0.5, 0.5);
             }
 
-            this.lives.render = function () {
+            this.lives.render = function() {
                 this.hurtPlayer(p);
             };
             //game.stage.backgroundColor = '#787878';
@@ -149,37 +149,17 @@ window.onload = function() {
                  addEnemyEmitterTrail(enemy);
             });
             game.time.events.add(1000, launchGreenEnemy);
-    //         //  The baddies!
-    // greenEnemies = game.add.group();
-    // greenEnemies.enableBody = true;
-    // greenEnemies.physicsBodyType = Phaser.Physics.ARCADE;
-    // greenEnemies.createMultiple(5, 'enemy-green');
-    // greenEnemies.setAll('anchor.x', 0.5);
-    // greenEnemies.setAll('anchor.y', 0.5);
-    // greenEnemies.setAll('scale.x', 0.5);
-    // greenEnemies.setAll('scale.y', 0.5);
-    // greenEnemies.setAll('angle', 180);
-    // greenEnemies.forEach(function(enemy){
-    //     addEnemyEmitterTrail(enemy);
-    //     enemy.body.setSize(enemy.width * 3 / 4, enemy.height * 3 / 4);
-    //     enemy.damageAmount = 20;
-    //     enemy.events.onKilled.add(function(){
-    //         enemy.trail.kill();
-    //     });
-    // });
-            //
-            //������
             weapon = game.add.weapon(1, 'bullet');
 
             weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
 
             //weapon.bulletAngleVariance = 3;
             weapon.bulletLifespan = 500;
-            weapon.bulletSpeed = 700;
+            weapon.bulletSpeed = 500;
             weapon.fireRate = 1000;
             weapon.multiFire = true;
-            weapon.fireAngle = 355;
-            weapon.bulletGravity.y = -500;
+            weapon.fireAngle = 270;
+            weapon.bulletGravity.y = 800;
             weapon.trackSprite(p, 16, 20);
 
             cursors = game.input.keyboard.createCursorKeys();
@@ -190,19 +170,13 @@ window.onload = function() {
 
             game.physics.arcade.collide(p, layer);
             game.physics.arcade.collide(enemies, layer);
-            // game.physics.arcade.collide(p3, layer);
-            // game.physics.arcade.collide(p4, layer);
+            game.physics.arcade.collide(weapon, layer);
             p.body.velocity.x = 0;
             weapon.fireAngle = 355;
             //  Check collisions
             game.physics.arcade.overlap(p, enemies, shipCollide, null, this);
             game.physics.arcade.overlap(enemies, weapon.bullets, hitEnemy, null, this);
-            // game.physics.arcade.overlap(p, p3, shipCollide, null, this);
-            // game.physics.arcade.overlap(p3, weapon.bullets, hitEnemy, null, this);
-            // game.physics.arcade.overlap(p, p4, shipCollide, null, this);
-            // game.physics.arcade.overlap(p4, weapon.bullets, hitEnemy, null, this);
-            if(p.body.y > 200)
-            {
+            if (p.body.y > 200) {
                 game.state.start('gameover');
             }
             if (cursors.up.isDown) {
@@ -243,15 +217,15 @@ window.onload = function() {
     game.state.start('beginMission');
 
     function shipCollide(player, enemy) {
-      enemy.kill();
+        enemy.kill();
 
-      player.damage(enemy.damageAmount);
-      this.hurtPlayer(player);
+        player.damage(enemy.damageAmount);
+        this.hurtPlayer(player);
     }
 
     function hitEnemy(enemy, bullet) {
-      enemy.kill();
-      bullet.kill()
+        enemy.kill();
+        bullet.kill()
     }
 
     function addEnemyEmitterTrail(enemy) {
