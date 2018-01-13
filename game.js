@@ -47,7 +47,10 @@ window.onload = function() {
             for (var j = 0; j < level[i].length; j++) {
                 if (level[i][j] == 'x') {
                     var wall = game.add.sprite(30 + 20 * j, 30 + 20 * i, 'wall');
-                    //wall.body.immovable = true;
+                    game.physics.enable(wall, Phaser.Physics.ARCADE);
+                    wall.body.allowGravity = false;
+                    wall.body.setSize(20, 20);
+                    wall.body.immovable = true;
                     this.walls.add(wall);
                 }
             }
