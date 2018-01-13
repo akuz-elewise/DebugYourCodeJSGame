@@ -1,6 +1,34 @@
 window.onload = function() {
     var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'GameWindow');
 
+    var startMissionState = {
+        preload: function() {
+            game.load.image('general', 'assets/general.png');
+        },
+
+        create: function() {
+            var portrait = game.add.sprite(game.world.centerX, 50, 'general');
+            portrait.anchor.set(0.5, 0);
+            var speech = "Так... тут у нас новенький!\nВот тебе задание, боец: в той задачке засели серьёзные баги!\nНадо их вычистить!";
+            var speechStyle = { font: "18px Arial", fill: "#ff0044", align: "center", boundsAlignH: "center", boundsAlignV: "top" };
+            var speechText = game.add.text(0, 0, speech, speechStyle);
+            speechText.setTextBounds(0, 300, 800, 200);
+
+            var msg = "Для начала игры нажмите ПРОБЕЛ";
+            var msgStyle = { font: "bold 14px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
+            var msgObj = game.add.text(0, 0, msg, msgStyle);
+
+            msgObj.setTextBounds(0, 500, 800, 100);
+
+            var spaceKey = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+            spaceKey.onDown.addOnce(this.start, this);
+        },
+
+        start: function() {
+            game.state.start('play');
+        }
+    };
+
     var playState = {
         preload: function() {
 
@@ -9,16 +37,6 @@ window.onload = function() {
             game.load.image('player', 'assets/phaser-dude.png');
             game.load.image('bullet', 'assets/bullet.png');
         },
-
-        // var map;
-        // var tileset;
-        // var layer;
-        // var p;
-        // var cursors;
-
-        // var sprite;
-        // var weapon;
-        // var fireButton;
 
         create: function() {
 
@@ -107,8 +125,9 @@ window.onload = function() {
         }
     }
 
+    game.state.add('beginMission', startMissionState);
     game.state.add('play', playState);
 
-    game.state.start('play');
+    game.state.start('beginMission');
 
 }
