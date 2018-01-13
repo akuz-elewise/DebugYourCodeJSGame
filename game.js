@@ -28,16 +28,7 @@ window.onload = function() {
     }
 
     function createLevel() {
-        var level = [
-            'xxxxxxxxxxxxxxx',
-            'x             x',
-            'x             x',
-            'x             x',
-            'x             x',
-            'x             x',
-            'x             x',
-            'xxxxxxxxxxxxxxx'
-        ];
+        var level = level00; //TODO: Переход между уровнями
 
         this.walls = game.add.group();
 
