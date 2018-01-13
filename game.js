@@ -60,8 +60,8 @@ window.onload = function() {
       }
     };
 
-    var lives = null;
-    var livesCounter = 2;
+    var lives;
+    var livesCounter;
     var playState = {
         preload: function() {
             game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
@@ -69,6 +69,8 @@ window.onload = function() {
             game.load.image('player', 'assets/phaser-dude.png');
             game.load.image('bullet', 'assets/bullet.png');
             game.load.image('heart', 'assets/player.png');
+            this.lives = null;
+            this.livesCounter = 3;
         },
 
         hurtPlayer: function(player) {
@@ -136,26 +138,17 @@ window.onload = function() {
 
             game.camera.follow(p);
 
-
-            // //
-            // p2 = game.add.sprite(100, 32, 'player');
-            // game.physics.enable(p2);
-            // p2.damageAmount = 25;
-            // p2.enableBody = true;
-            // p2.physicsBodyType = Phaser.Physics.ARCADE;
-            //
-            // p3 = game.add.sprite(150, 32, 'player');
-            // game.physics.enable(p3);
-            // p2.damageAmount = 25;
-            // p2.enableBody = true;
-            // p2.physicsBodyType = Phaser.Physics.ARCADE;
-            //
-            // p4 = game.add.sprite(120, 32, 'player');
-            // game.physics.enable(p4);
-            // p2.damageAmount = 25;
-            // p2.enableBody = true;
-            // p2.physicsBodyType = Phaser.Physics.ARCADE;
-
+            enemies = game.add.group();
+            game.physics.enable(enemies);
+            enemies.enableBody = true;
+            enemies.physicsBodyType = Phaser.Physics.ARCADE;
+            enemies.createMultiple(5, 'player');
+            enemies.setAll('anchor.x', 0.5);
+            enemies.setAll('anchor.y', 0.5);
+            enemies.forEach(function(enemy){
+                 addEnemyEmitterTrail(enemy);
+            });
+            game.time.events.add(1000, launchGreenEnemy);
     //         //  The baddies!
     // greenEnemies = game.add.group();
     // greenEnemies.enableBody = true;
@@ -196,14 +189,14 @@ window.onload = function() {
         update: function() {
 
             game.physics.arcade.collide(p, layer);
-            game.physics.arcade.collide(p2, layer);
-            game.physics.arcade.collide(p3, layer);
-            game.physics.arcade.collide(p4, layer);
+            game.physics.arcade.collide(enemies, layer);
+            // game.physics.arcade.collide(p3, layer);
+            // game.physics.arcade.collide(p4, layer);
             p.body.velocity.x = 0;
             weapon.fireAngle = 355;
             //  Check collisions
-            // game.physics.arcade.overlap(p, p2, shipCollide, null, this);
-            // game.physics.arcade.overlap(p2, weapon.bullets, hitEnemy, null, this);
+            game.physics.arcade.overlap(p, enemies, shipCollide, null, this);
+            game.physics.arcade.overlap(enemies, weapon.bullets, hitEnemy, null, this);
             // game.physics.arcade.overlap(p, p3, shipCollide, null, this);
             // game.physics.arcade.overlap(p3, weapon.bullets, hitEnemy, null, this);
             // game.physics.arcade.overlap(p, p4, shipCollide, null, this);
@@ -260,4 +253,44 @@ window.onload = function() {
       enemy.kill();
       bullet.kill()
     }
+
+    function addEnemyEmitterTrail(enemy) {
+      var enemyTrail = game.add.emitter(enemy.x, p.y - 10, 100);
+      enemyTrail.width = 10;
+      enemyTrail.setXSpeed(20, -20);
+      enemy.trail = enemyTrail;
+    }
+
+    function launchGreenEnemy() {
+      var MIN_ENEMY_SPACING = 30;
+      var MAX_ENEMY_SPACING = 300;
+      var ENEMY_SPEED = 30;
+
+      var enemy = enemies.getFirstExists(false);
+      if (enemy) {
+        enemy.reset(game.rnd.integerInRange(0, game.width), -20);
+        enemy.body.velocity.x = game.rnd.integerInRange(-300, 300);
+        //enemy.body.velocity.y = ENEMY_SPEED;
+        enemy.body.drag.x = 100;
+
+        enemy.trail.start(false, 800, 1);
+
+        //  Update function for each enemy ship to update rotation etc
+        enemy.update = function(){
+          //enemy.angle = 180 - game.math.radToDeg(Math.atan2(enemy.body.velocity.x, enemy.body.velocity.y));
+
+          enemy.trail.x = enemy.x;
+          //enemy.trail.y = enemy.y -10;
+
+          //  Kill enemies once they go off screen
+          if (enemy.x > game.width + 200) {
+            enemy.kill();
+          }
+        }
+    }
+
+    //  Send another enemy soon
+    greenEnemyLaunchTimer = game.time.events.add(game.rnd.integerInRange(MIN_ENEMY_SPACING, MAX_ENEMY_SPACING), launchGreenEnemy);
+  }
+
 }
