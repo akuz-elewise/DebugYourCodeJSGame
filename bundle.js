@@ -373,6 +373,7 @@ module.exports = function(game) {
         cursors: null,
         monster: null,
         background: null,
+        player: null,
 
         preload: function() {
             game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
@@ -401,16 +402,17 @@ module.exports = function(game) {
 
             layer.resizeWorld();
 
-            p = game.add.sprite(32, 32, 'player');
-            game.physics.enable(p);
+            var startingPoints = this.getObjectsOfType('start', map, 'Objects1');
+            this.player = game.add.sprite(startingPoints[0].x, startingPoints[0].y, 'player');
+            game.physics.enable(this.player);
 
             game.physics.arcade.gravity.y = 400;
 
-            p.body.bounce.y = 0.2;
-            p.body.linearDamping = 1;
-            p.body.collideWorldBounds = true;
+            this.player.body.bounce.y = 0.2;
+            this.player.body.linearDamping = 1;
+            this.player.body.collideWorldBounds = true;
 
-            game.camera.follow(p);
+            game.camera.follow(this.player);
 
             worm = game.add.sprite(512, 32, 'monster_worm');
             worm.anchor.set(0.5, 0.0);
@@ -433,23 +435,23 @@ module.exports = function(game) {
         },
 
         update: function() {
-            game.physics.arcade.collide(p, layer);
-            game.physics.arcade.collide(worm, layer, this.monsterWormCollideCallback);
+            game.physics.arcade.collide(this.player, layer);
+            game.physics.arcade.collide(this.monster, layer, this.monsterWormCollideCallback);
 
             background.tilePosition.set(-0.2 * game.camera.x, -0.2 * game.camera.y);
 
             if (this.cursors.up.isDown) {
-                if (p.body.onFloor()) {
-                    p.body.velocity.y = -200;
+                if (this.player.body.onFloor()) {
+                    this.player.body.velocity.y = -200;
                 }
             }
             if (this.cursors.left.isDown) {
-                p.body.velocity.x = -150;
+                this.player.body.velocity.x = -150;
             }
             else if (this.cursors.right.isDown) {
-                p.body.velocity.x = 150;
+                this.player.body.velocity.x = 150;
             } else {
-                p.body.velocity.x = 0;
+                this.player.body.velocity.x = 0;
             };
 
         },
@@ -476,7 +478,22 @@ module.exports = function(game) {
             worm.body.velocity.x = -worm.localState.direction * 50;
         },
 
-        render: function() {
+
+        /**
+         * getObjectsOfType - find object in object layer by its type
+         *
+         * @param  {string} type  object type
+         * @param  {Phaser.Tilemap} map   Phaser.Tilemap object
+         * @param  {string} layer layer name
+         * @return {Array}       array of objects
+         */
+        getObjectsOfType: function(type, map, layer) {
+            return map.objects[layer].filter(function (value, index, ar) {
+                return value.type === type;
+            });
+          },
+
+          render: function() {
             // game.debug.body(this.monster);
             // game.debug.bodyInfo(this.monster, 32, 300);
         },

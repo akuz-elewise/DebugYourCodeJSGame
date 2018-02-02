@@ -19,8 +19,37 @@
          "width":212,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "name":"Objects1",
+         "objects":[
+                {
+                 "height":32,
+                 "id":5,
+                 "name":"StartingPoint",
+                 "properties":
+                    {
+                     "realStart":true
+                    },
+                 "propertytypes":
+                    {
+                     "realStart":"bool"
+                    },
+                 "rotation":0,
+                 "type":"start",
+                 "visible":true,
+                 "width":32,
+                 "x":16,
+                 "y":176
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextobjectid":1,
+ "nextobjectid":7,
  "orientation":"orthogonal",
  "properties":
     {
