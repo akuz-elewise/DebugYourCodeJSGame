@@ -1,4 +1,6 @@
 
+var Bug = require('./bug.js');
+var Player = require('./player.js');
 
 /**
  * module - mission screen
@@ -12,12 +14,20 @@ module.exports = function(game) {
         monster: null,
         background: null,
         player: null,
+        bugs: null,
+        user: null,
+
+        init: function() {
+            game.renderer.renderSession.roundPixels = true;
+        },
 
         preload: function() {
             game.load.tilemap('mario', 'assets/map/test_tiles.json', null, Phaser.Tilemap.TILED_JSON);
             game.load.image('tiles', 'assets/tiles/super_mario_tiles.png');
             game.load.image('player', 'assets/phaser-dude.png');
-            game.load.atlasJSONHash('monster_worm', 'assets/sprites/worm1.png', 'assets/sprites/worm_sprite.json')
+            game.load.atlasJSONHash('programmer', 'assets/sprites/player_tilesheet.png', 'assets/sprites/player-atlas.json');
+            game.load.atlasJSONHash('monster_worm', 'assets/sprites/worm1.png', 'assets/sprites/worm_sprite.json');
+            game.load.atlasJSONHash('monster_qa_bug', 'assets/sprites/bug_atlas.png', 'assets/sprites/bug_atlas.json');
             game.load.image('background', 'assets/code-bg.png')
         },
 
@@ -41,18 +51,15 @@ module.exports = function(game) {
             layer.resizeWorld();
 
             var startingPoints = this.getObjectsOfType('start', map, 'Objects1');
-            this.player = game.add.sprite(startingPoints[0].x, startingPoints[0].y, 'player');
-            game.physics.enable(this.player);
-
             game.physics.arcade.gravity.y = 400;
 
-            this.player.body.bounce.y = 0.2;
-            this.player.body.linearDamping = 1;
-            this.player.body.collideWorldBounds = true;
-
+            this.player = new Player(game, startingPoints[0].x, startingPoints[0].y);
+            game.add.existing(this.player);
             game.camera.follow(this.player);
 
-            worm = game.add.sprite(512, 32, 'monster_worm');
+            this.bugs = game.add.group();
+
+            var worm = game.add.sprite(512, 32, 'monster_worm');
             worm.anchor.set(0.5, 0.0);
             worm.localState = {
                 direction: 1,
@@ -65,7 +72,9 @@ module.exports = function(game) {
             worm.body.linearDamping = 1;
             this.monster = worm;
 
-            this.cursors = game.input.keyboard.createCursorKeys();
+            var bug = new Bug(game, 256, 32);
+            this.bugs.add(bug);
+
             fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
 
             var exitKey = game.input.keyboard.addKey(Phaser.KeyCode.Q);
@@ -74,24 +83,12 @@ module.exports = function(game) {
 
         update: function() {
             game.physics.arcade.collide(this.player, layer);
-            game.physics.arcade.collide(this.monster, layer, this.monsterWormCollideCallback);
+            //game.physics.arcade.collide(this.user, layer);
+            game.physics.arcade.collide(this.monster, layer, this.monsterCollidesWallsCallback);
+            // game.physics.arcade.collide(this.bug, layer, this.monsterCollidesWallsCallback);
+            game.physics.arcade.collide(this.bugs, layer);
 
             background.tilePosition.set(-0.2 * game.camera.x, -0.2 * game.camera.y);
-
-            if (this.cursors.up.isDown) {
-                if (this.player.body.onFloor()) {
-                    this.player.body.velocity.y = -200;
-                }
-            }
-            if (this.cursors.left.isDown) {
-                this.player.body.velocity.x = -150;
-            }
-            else if (this.cursors.right.isDown) {
-                this.player.body.velocity.x = 150;
-            } else {
-                this.player.body.velocity.x = 0;
-            };
-
         },
 
         gameover: function() {
@@ -100,20 +97,20 @@ module.exports = function(game) {
 
 
         /**
-         * monsterWormCollideCallback - action, when worm collides with the wall
+         * monsterCollidesWallsCallback - action, when monster collides with the wall
          *
          * @param  {Phaser.Sprite} worm worm instance
          * @return {void}      void
          */
-        monsterWormCollideCallback: function(worm) {
-            if (worm.body.blocked.left) {
-                worm.localState.direction = -1;
-            } else if (worm.body.blocked.right) {
-                worm.localState.direction = 1;
+        monsterCollidesWallsCallback: function(monster) {
+            if (monster.body.blocked.left) {
+                monster.localState.direction = -1;
+            } else if (monster.body.blocked.right) {
+                monster.localState.direction = 1;
             };
 
-            worm.scale.x = worm.localState.direction;
-            worm.body.velocity.x = -worm.localState.direction * 50;
+            monster.scale.x = monster.localState.direction;
+            monster.body.velocity.x = -monster.localState.direction * 50;
         },
 
 
@@ -132,8 +129,10 @@ module.exports = function(game) {
           },
 
           render: function() {
-            // game.debug.body(this.monster);
-            // game.debug.bodyInfo(this.monster, 32, 300);
+            //game.debug.physicsGroup(this.bugs);
+            game.debug.bodyInfo(this.player, 32, 300);
+            //game.debug.spriteInfo(this.player, 32, 300);
+            game.debug.body(this.player);
         },
     };
 };
