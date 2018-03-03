@@ -1,6 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
-
 /**
  * anonymous function - briefing screen descriptor
  *
@@ -235,7 +234,7 @@ Bug.prototype._updateRun = function() {
 
 module.exports = Bug
 
-},{"./lib/state-machine.js":5}],3:[function(require,module,exports){
+},{"./lib/state-machine.js":6}],3:[function(require,module,exports){
 var briefingScreen = require('./briefingScreen.js');
 var gameoverScreen = require('./gameoverScreen.js');
 var missionScreen = require('./mission.js');
@@ -497,7 +496,7 @@ window.onload = function() {
 
 }
 
-},{"./briefingScreen.js":1,"./gameoverScreen.js":4,"./mission.js":6}],4:[function(require,module,exports){
+},{"./briefingScreen.js":1,"./gameoverScreen.js":4,"./mission.js":7}],4:[function(require,module,exports){
 
 /**
  * module - game over screen
@@ -548,6 +547,181 @@ module.exports = function(game) {
 };
 
 },{}],5:[function(require,module,exports){
+
+var StateMachine = require('./lib/state-machine.js');
+
+/**
+ * GameActor - abstract game actor
+ *
+ * @param  {Phaser.Game} game    Phaser.Game object
+ * @param  {number} x       x position
+ * @param  {number} y       y position
+ * @return {void}
+ */
+function Invoker(game, x, y) {
+    // Invoker object internal state
+    this._state = {
+        direction: 0,
+        speed: this._getSpeed(),
+        fsm: null,
+        timer: 100,
+    };
+
+    Phaser.Sprite.call(this, game, x, y, 'monster_invoker');
+    this.anchor.set(0.5, 1.0);
+
+    // setup physic properties
+    this.game.physics.enable(this);
+    this.body.collideWorldBounds = true;
+
+    // setup animations
+    this._setupAnimations();
+
+    // setup initial state and FSM
+    this._setupState();
+
+}
+
+// inherit from Phaser.Sprite
+Invoker.prototype = Object.create(Phaser.Sprite.prototype);
+Invoker.prototype.constructor = Invoker;
+
+// Invoker constants
+Invoker.prototype.CONST = {
+    SPEED: 40,
+    SPEED_VARIATION: 20,
+    BODIES: {
+        'move': {
+            'default': { width: 27, height: 36 },
+        },
+        'idle': {
+            'default': { width: 27, height: 36 },
+        },
+        'dmg': {
+            'default': { width: 33, height: 34 },
+        },
+        'roar': {
+            'default': { width: 29, height: 36 },
+        },
+    },
+};
+
+Invoker.prototype._setupAnimations = function() {
+    this.animations.add('move', [5, 6, 7, 8, 9], this._state.speed / 4, true);
+    this.animations.add('idle', [5]);
+    this.animations.add('dmg', [0, 1, 2, 3, 4], 12);
+    this.animations.add('roar', [9, 9, 10, 11, 10, 11, 10, 11, 10, 11, 10, 9], 18);
+    this.animations.play('idle');
+}
+
+Invoker.prototype._setupState = function() {
+    this._state.direction = Math.random() < 0.5 ? -1 : 1;
+    let monster = this;
+    this._state.fsm = new StateMachine({
+
+        init: 'idle',
+
+        transitions: [
+            { name: 'move', from: 'idle', to: 'move' },
+            { name: 'stop', from: 'move', to: 'idle' },
+        ],
+
+        methods: {
+            onMove: function() {
+                monster._onMove();
+            },
+            onStop: function() {
+                monster._onStop();
+            },
+            update: function() {
+                monster._updateState();
+            },
+        },
+
+    });
+};
+
+Invoker.prototype.update = function() {
+    this._state.fsm.update();
+    this._setBody();
+
+    if (this._state.timer !== null) {
+        if (!this._state.timer) {
+            this._decideNewAction();
+        } else {
+            this._state.timer--;
+        };
+    }
+};
+
+Invoker.prototype._setBody = function() {
+    let ani = this.animations.name;
+    let sizes = this.CONST.BODIES[ani];
+    let key = this.animations.frame;
+    var size = sizes[key] ? sizes[key] : sizes['default'];
+    this.body.setSize(size.width, size.height);
+};
+
+Invoker.prototype._getSpeed = function() {
+    return this.CONST.SPEED + Math.random() * this.CONST.SPEED_VARIATION;
+};
+
+Invoker.prototype._decideNewAction = function() {
+    let fsm = this._state.fsm;
+    let curState = fsm.state;
+    if (curState === 'idle') {
+        fsm.move();
+        this._state.timer = 400;
+    } else if (curState === 'move') {
+        fsm.stop();
+        this._state.timer = 100;
+    };
+};
+
+Invoker.prototype._onMove = function() {
+    this.animations.play('move');
+    this._state.speed = this._getSpeed();
+};
+
+Invoker.prototype._onStop = function() {
+    this.animations.play('idle');
+    this.body.velocity.x = 0;
+};
+
+Invoker.prototype._updateState = function() {
+    let fsm = this._state.fsm;
+    if (!fsm) {
+        return;
+    }
+
+    let state = fsm.state;
+    if (state === 'idle') {
+        this._updateIdle();
+    } else if (state === 'move') {
+        this._updateRun();
+    } else {
+        console.log('No handler for state ${state}');
+    };
+};
+
+Invoker.prototype._updateIdle = function() {
+    this.scale.x = this._state.direction;
+};
+
+Invoker.prototype._updateRun = function() {
+    if (this.body.blocked.left) {
+        this._state.direction = 1;
+    } else if (this.body.blocked.right) {
+        this._state.direction = -1;
+    };
+
+    this.scale.x = this._state.direction;
+    this.body.velocity.x = this._state.direction * this._state.speed;
+};
+
+module.exports = Invoker
+
+},{"./lib/state-machine.js":6}],6:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1218,10 +1392,11 @@ module.exports = function(message, transition, from, to, current) {
 /******/ ]);
 });
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
 var Bug = require('./bug.js');
 var Player = require('./player.js');
+var Invoker = require('./invoker.js');
 
 /**
  * module - mission screen
@@ -1237,6 +1412,7 @@ module.exports = function(game) {
         player: null,
         bugs: null,
         user: null,
+        invoker: null,
 
         init: function() {
             game.renderer.renderSession.roundPixels = true;
@@ -1249,6 +1425,7 @@ module.exports = function(game) {
             game.load.atlasJSONHash('programmer', 'assets/sprites/player_tilesheet.png', 'assets/sprites/player-atlas.json');
             game.load.atlasJSONHash('monster_worm', 'assets/sprites/worm1.png', 'assets/sprites/worm_sprite.json');
             game.load.atlasJSONHash('monster_qa_bug', 'assets/sprites/bug_atlas.png', 'assets/sprites/bug_atlas.json');
+            game.load.atlasJSONHash('monster_invoker', 'assets/sprites/invoker-atlas.png', 'assets/sprites/invoker-atlas.json');
             game.load.image('background', 'assets/code-bg.png')
         },
 
@@ -1295,6 +1472,9 @@ module.exports = function(game) {
 
             var bug = new Bug(game, 256, 32);
             this.bugs.add(bug);
+
+            var invoker = new Invoker(game, 128, 32);
+            this.bugs.add(invoker);
 
             fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
 
@@ -1358,7 +1538,7 @@ module.exports = function(game) {
     };
 };
 
-},{"./bug.js":2,"./player.js":7}],7:[function(require,module,exports){
+},{"./bug.js":2,"./invoker.js":5,"./player.js":8}],8:[function(require,module,exports){
 
 var StateMachine = require('./lib/state-machine.js');
 
@@ -1559,4 +1739,4 @@ Player.prototype._getAnimation = function() {
 
 module.exports = Player
 
-},{"./lib/state-machine.js":5}]},{},[3]);
+},{"./lib/state-machine.js":6}]},{},[3]);

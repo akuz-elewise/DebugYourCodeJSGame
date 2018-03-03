@@ -1,6 +1,7 @@
 
 var Bug = require('./bug.js');
 var Player = require('./player.js');
+var Invoker = require('./invoker.js');
 
 /**
  * module - mission screen
@@ -16,6 +17,7 @@ module.exports = function(game) {
         player: null,
         bugs: null,
         user: null,
+        invoker: null,
 
         init: function() {
             game.renderer.renderSession.roundPixels = true;
@@ -28,6 +30,7 @@ module.exports = function(game) {
             game.load.atlasJSONHash('programmer', 'assets/sprites/player_tilesheet.png', 'assets/sprites/player-atlas.json');
             game.load.atlasJSONHash('monster_worm', 'assets/sprites/worm1.png', 'assets/sprites/worm_sprite.json');
             game.load.atlasJSONHash('monster_qa_bug', 'assets/sprites/bug_atlas.png', 'assets/sprites/bug_atlas.json');
+            game.load.atlasJSONHash('monster_invoker', 'assets/sprites/invoker-atlas.png', 'assets/sprites/invoker-atlas.json');
             game.load.image('background', 'assets/code-bg.png')
         },
 
@@ -74,6 +77,9 @@ module.exports = function(game) {
 
             var bug = new Bug(game, 256, 32);
             this.bugs.add(bug);
+
+            var invoker = new Invoker(game, 128, 32);
+            this.bugs.add(invoker);
 
             fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
 
